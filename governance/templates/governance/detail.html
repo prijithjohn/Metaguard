@@ -1,0 +1,65 @@
+{% extends "common/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3">Sensitive data discovery for {{ dataset.name }}</h1>
+        <p class="text-muted">Review columns that may contain personally identifiable or sensitive information.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'dataset_history' %}">Back to history</a>
+</div>
+
+{% if report and report.total_sensitive_columns > 0 %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-danger mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Sensitive columns</h5>
+                <p class="card-text display-6">{{ report.total_sensitive_columns }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total matches</h5>
+                <p class="card-text display-6">{{ report.total_matches }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Last scanned</h5>
+                <p class="card-text">{{ report.scanned_at|date:'Y-m-d H:i' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Column</th>
+            <th>Sensitivity type</th>
+            <th>Matches</th>
+            <th>Sample value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for field in report.sensitive_fields.all %}
+        <tr>
+            <td>{{ field.column_name }}</td>
+            <td>{{ field.sensitivity_type }}</td>
+            <td>{{ field.match_count }}</td>
+            <td>{{ field.sample_value|default:'N/A' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">
+    No sensitive data was detected in this dataset.
+</div>
+{% endif %}
+{% endblock %}

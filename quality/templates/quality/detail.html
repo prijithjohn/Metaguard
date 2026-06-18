@@ -1,0 +1,77 @@
+{% extends "common/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3">Quality report for {{ dataset.name }}</h1>
+        <p class="text-muted">Review the dataset quality metrics generated from the uploaded CSV.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'dataset_history' %}">Back to history</a>
+</div>
+
+{% if report %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Quality score</h5>
+                <p class="card-text display-6">{{ report.score|floatformat:1 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Missing values</h5>
+                <p class="card-text">{{ report.missing_values }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Duplicate rows</h5>
+                <p class="card-text">{{ report.duplicates }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Invalid email records</h5>
+                <p class="card-text">{{ report.invalid_records }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered table-hover">
+    <tbody>
+        <tr>
+            <th>Dataset</th>
+            <td>{{ dataset.name }}</td>
+        </tr>
+        <tr>
+            <th>Rows</th>
+            <td>{{ dataset.row_count }}</td>
+        </tr>
+        <tr>
+            <th>Columns</th>
+            <td>{{ dataset.column_count }}</td>
+        </tr>
+        <tr>
+            <th>Uploaded</th>
+            <td>{{ dataset.uploaded_at|date:'Y-m-d H:i' }}</td>
+        </tr>
+        <tr>
+            <th>Quality score</th>
+            <td>{{ report.score|floatformat:1 }}</td>
+        </tr>
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">
+    Quality analysis has not been generated for this dataset yet.
+</div>
+{% endif %}
+{% endblock %}

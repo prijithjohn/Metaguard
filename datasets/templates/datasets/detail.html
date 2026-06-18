@@ -1,0 +1,142 @@
+{% extends "common/base.html" %}
+
+{% block title %}Dataset: {{ dataset.name }} - MetaGuard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3">Dataset details: {{ dataset.name }}</h1>
+        <p class="text-muted">View governance lineage, metrics, and reports for this dataset.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'dataset_history' %}">Back to history</a>
+        <a class="btn btn-outline-success" href="{% url 'dataset_report_pdf' dataset.id %}">Download PDF</a>
+        {% if request.user.is_authenticated %}
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">Delete</button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card h-100 border-primary">
+            <div class="card-body">
+                <h6 class="card-title">Dataset count</h6>
+                <p class="display-6 mb-0">{{ dataset.row_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 border-secondary">
+            <div class="card-body">
+                <h6 class="card-title">Fields</h6>
+                <p class="display-6 mb-0">{{ dataset.column_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 border-info">
+            <div class="card-body">
+                <h6 class="card-title">Quality score</h6>
+                <p class="display-6 mb-0">{{ dataset.quality_score|default:'N/A'|floatformat:1 }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 border-warning">
+            <div class="card-body">
+                <h6 class="card-title">Risk level</h6>
+                <p class="display-6 mb-0">{{ dataset.risk_level|default:'Unclassified' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header">
+                Data lineage
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column align-items-center gap-3">
+                    <div class="w-100 p-3 rounded border bg-body-tertiary text-center">Dataset Uploaded</div>
+                    <div class="w-100 p-3 rounded border bg-body-tertiary text-center">Metadata Extraction</div>
+                    <div class="w-100 p-3 rounded border bg-body-tertiary text-center">Quality Analysis</div>
+                    <div class="w-100 p-3 rounded border bg-body-tertiary text-center">Sensitive Data Detection</div>
+                    <div class="w-100 p-3 rounded border bg-body-tertiary text-center">Governance Reporting</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">Quick links</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Metadata</strong> <a href="{% url 'metadata_detail' dataset.id %}">View details</a></li>
+                    <li class="list-group-item"><strong>Quality</strong> <a href="{% url 'quality_detail' dataset.id %}">View report</a></li>
+                    <li class="list-group-item"><strong>Governance</strong> <a href="{% url 'sensitive_detail' dataset.id %}">View discovery</a></li>
+                    <li class="list-group-item"><strong>Raw file</strong> <a href="{{ dataset.file.url }}" target="_blank">Download</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4">
+        <h5>Processing Status</h5>
+        <div class="progress" style="height: 28px;">
+            <div id="datasetProgress" class="progress-bar" role="progressbar" style="width: {{ dataset.progress_percent }}%;" aria-valuenow="{{ dataset.progress_percent }}" aria-valuemin="0" aria-valuemax="100">{{ dataset.progress_percent }}%</div>
+        </div>
+        <p id="datasetStatusText" class="mt-2">Status: {{ dataset.status }}</p>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDeleteModalLabel">Delete dataset</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to permanently delete dataset "{{ dataset.name }}"? This will remove related metadata and governance records.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="post" action="{% url 'dataset_delete' dataset.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete dataset</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <script>
+        (function(){
+            const datasetId = {{ dataset.id }};
+            const progressEl = document.getElementById('datasetProgress');
+            const statusText = document.getElementById('datasetStatusText');
+
+            function fetchStatus(){
+                fetch(`/datasets/${datasetId}/status/`).then(r=>r.json()).then(data=>{
+                    progressEl.style.width = data.progress + '%';
+                    progressEl.innerText = data.progress + '%';
+                    statusText.innerText = 'Status: ' + data.status;
+                    if(data.status === 'PROCESSING' || data.status === 'PENDING'){
+                        setTimeout(fetchStatus, 2500);
+                    }
+                }).catch(()=>{
+                    // stop polling on error
+                });
+            }
+
+            // start polling if not completed
+            if (statusText.innerText.indexOf('COMPLETED') === -1 && statusText.innerText.indexOf('FAILED') === -1) {
+                setTimeout(fetchStatus, 1500);
+            }
+        })();
+    </script>
+{% endblock %}

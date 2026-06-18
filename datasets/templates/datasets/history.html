@@ -1,0 +1,95 @@
+{% extends "common/base.html" %}
+
+{% block title %}Upload History - MetaGuard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3">Upload history</h1>
+        <p class="text-muted">Review datasets that have been uploaded into MetaGuard.</p>
+    </div>
+    <a class="btn btn-outline-primary" href="{% url 'upload_dataset' %}">Upload new dataset</a>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+        <input name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search dataset name...">
+    </div>
+    <div class="col-md-2">
+        <select name="risk" class="form-select">
+            <option value="">All risks</option>
+            <option value="Public">Public</option>
+            <option value="Internal">Internal</option>
+            <option value="Confidential">Confidential</option>
+            <option value="Restricted">Restricted</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input name="min_quality" value="{{ request.GET.min_quality }}" class="form-control" placeholder="Min quality">
+    </div>
+    <div class="col-md-2">
+        <select name="has_sensitive" class="form-select">
+            <option value="">Any sensitivity</option>
+            <option value="1">Has sensitive data</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+
+{% if datasets %}
+<table class="table table-hover table-bordered align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>File</th>
+            <th>Rows</th>
+            <th>Columns</th>
+            <th>Uploaded</th>
+            <th>Risk</th>
+            <th>Metadata</th>
+            <th>Quality</th>
+            <th>Sensitivity</th>
+            <th>PDF</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dataset in datasets %}
+        <tr>
+            <td><a href="{% url 'dataset_detail' dataset.id %}">{{ dataset.name }}</a></td>
+            <td><a href="{{ dataset.file.url }}" target="_blank">{{ dataset.file_name }}</a></td>
+            <td>{{ dataset.row_count }}</td>
+            <td>{{ dataset.column_count }}</td>
+            <td>{{ dataset.uploaded_at|date:'Y-m-d H:i' }}</td>
+            <td><span class="badge bg-warning text-dark">{{ dataset.risk_level|default:'Unclassified' }}</span></td>
+            <td><span class="badge bg-info">{{ dataset.quality_score|default:'N/A'|floatformat:1 }}</span></td>
+            <td><a class="btn btn-sm btn-outline-secondary" href="{% url 'metadata_detail' dataset.id %}">Metadata</a></td>
+            <td><a class="btn btn-sm btn-outline-primary" href="{% url 'quality_detail' dataset.id %}">Quality</a></td>
+            <td><a class="btn btn-sm btn-outline-danger" href="{% url 'sensitive_detail' dataset.id %}">Sensitive</a></td>
+            <td><a class="btn btn-sm btn-outline-success" href="{% url 'dataset_report_pdf' dataset.id %}">PDF</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">No datasets have been uploaded yet.</div>
+{% endif %}
+{% if page_obj and page_obj.has_other_pages %}
+<nav class="mt-3" aria-label="Page navigation">
+    <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">&laquo; Prev</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+        {% endif %}
+        <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next &raquo;</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "common/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3">Metadata for {{ dataset.name }}</h1>
+        <p class="text-muted">Dataset contains {{ dataset.column_count }} columns and {{ dataset.row_count }} rows.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'dataset_history' %}">Back to history</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Uploaded</h5>
+                <p class="card-text">{{ dataset.uploaded_at|date:'Y-m-d H:i' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-secondary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Quality score</h5>
+                <p class="card-text">{{ dataset.quality_score|default:'Pending' }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Risk level</h5>
+                <p class="card-text">{{ dataset.risk_level|default:'Unclassified' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if columns %}
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-light">
+        <tr>
+            <th>Column</th>
+            <th>Data type</th>
+            <th>Null values</th>
+            <th>Unique values</th>
+            <th>Classification</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for column in columns %}
+        <tr>
+            <td>{{ column.column_name }}</td>
+            <td>{{ column.data_type }}</td>
+            <td>{{ column.null_count }}</td>
+            <td>{{ column.unique_count }}</td>
+            <td>{{ column.classification|default:'N/A' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">Metadata has not been extracted for this dataset yet.</div>
+{% endif %}
+{% endblock %}
