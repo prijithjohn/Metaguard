@@ -1,66 +1,111 @@
-# MetaGuard
+# 🛡️ MetaGuard
 
-MetaGuard is a lightweight data governance and data quality inspection tool built with Django. It supports dataset ingestion (CSV and JSON), metadata extraction, quality scoring, sensitive data discovery, and PDF reporting.
+### Enterprise Data Governance & Risk Intelligence Platform
 
-## Project Overview
-- Ingest datasets (CSV/JSON)
-- Extract column-level metadata
-- Compute data quality scores
-- Discover sensitive columns (PII) and compute risk
-- Dashboard with KPIs and charts
-- PDF report generation for executive summaries
+MetaGuard is a Django-based platform that analyzes datasets for **data quality, metadata insights, sensitive information (PII), and risk classification**. It helps organizations identify governance issues before datasets are used for analytics or AI systems.
 
-## Business Problem
-Organizations need an accessible tool to evaluate data quality and detect sensitive information during dataset intake. MetaGuard provides quick operational visibility for data stewards and governance teams.
+---
 
-## Architecture (Mermaid)
-```mermaid
-flowchart LR
-  Upload[User Upload (CSV/JSON)] --> Backend[MetaGuard Django App]
-  Backend -->|store| Media[Media Storage]
-  Backend -->|process| Services[Metadata / Quality / Governance Services]
-  Services --> DB[(Database)]
-  Backend -->|render| Frontend[Bootstrap Templates]
-  Backend -->|export| PDF[ReportLab PDF]
+## 📸 Preview
+
+### Dashboard
+
+![Dashboard](Screenshots/dashboard.png)
+
+### Quality Analysis
+
+![Quality](Screenshots/quality.png)
+
+### Sensitive Data Detection
+
+![Sensitive](Screenshots/sensitive.png)
+
+---
+
+## 🚀 Features
+
+* 📂 CSV & JSON Dataset Upload
+* ⚡ Asynchronous Processing with Celery & Redis
+* 📊 Metadata Extraction
+* 📈 Data Quality Scoring
+* 🔒 PII & Sensitive Data Detection
+* 🚨 Risk Classification Engine
+* 📄 PDF Governance Reports
+* 📉 Interactive Analytics Dashboard
+
+---
+
+## 🏗️ Architecture
+
+```text
+User
+ ↓
+Django
+ ↓
+Redis
+ ↓
+Celery Workers
+ ↓
+Metadata Analysis
+Quality Analysis
+PII Detection
+ ↓
+PostgreSQL
+ ↓
+Dashboard & PDF Reports
 ```
 
-## Database Schema
-- `Dataset` — metadata and file pointer
-- `DatasetColumn` — column-level metadata
-- `QualityReport` — quality metrics and score
-- `SensitiveDataReport` / `SensitiveField` — sensitive findings
+---
 
-## Features
-- Upload CSV or JSON datasets
-- Metadata extraction (data types, nulls, uniques)
-- Quality scoring algorithm with configurable weights
-- Sensitive data discovery (emails, SSN, PAN, Aadhaar, IFSC, UPI, phone, DOB, salary, address heuristics)
-- Dashboard with KPIs and charts
-- PDF report generation
+## 🛠️ Tech Stack
 
-## Installation
-1. Create virtualenv and install dependencies
+| Layer      | Technology       |
+| ---------- | ---------------- |
+| Backend    | Django 5         |
+| Database   | PostgreSQL       |
+| Queue      | Celery           |
+| Broker     | Redis            |
+| Processing | Pandas, NumPy    |
+| Reports    | ReportLab        |
+| Frontend   | Bootstrap 5      |
+| Deployment | Railway / Docker |
+
+---
+
+## ⚙️ Run Locally
+
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+git clone https://github.com/prijithjohn/Metaguard.git
+
+cd Metaguard
+
 pip install -r requirements.txt
-```
-2. Configure environment variables (see `.env.example`)
-3. Apply migrations
-```bash
+
 python manage.py migrate
-```
-4. Run development server
-```bash
+
+redis-server
+
+celery -A metaguard_project worker --loglevel=info --pool=solo
+
 python manage.py runserver
 ```
 
-## Usage
-- Access dashboard: http://127.0.0.1:8000/dashboard/
-- Upload dataset: http://127.0.0.1:8000/datasets/upload/
+---
 
-## Future Enhancements
-- Background processing for large datasets (Celery/RQ)
-- Virus scanning on uploads
-- User authentication and role-based access control
-- Export to additional formats and richer PDF reports
+## ⭐ Highlights
+
+* Handles datasets up to 1GB
+* Detects 13+ PII patterns
+* Real-time dashboard analytics
+* Background processing using Celery & Redis
+* Production-ready deployment architecture
+
+---
+
+## 👨‍💻 Author
+
+**Prijith John**
+
+GitHub: https://github.com/prijithjohn
+
+LinkedIn: https://www.linkedin.com/in/prijith-john-dev
