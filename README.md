@@ -6,19 +6,6 @@ MetaGuard is a Django-based platform that analyzes datasets for **data quality, 
 
 ---
 
-## 📸 Preview
-
-### Dashboard
-
-![Dashboard](images/Screenshot 2026-06-20 012409.png)
-
-### Quality Analysis
-
-![Quality](images/Screenshot 2026-06-20 012543.png)
-
-### Sensitive Data Detection
-
-![Sensitive](Simages/Screenshot 2026-06-20 012439.png)
 
 ---
 
