@@ -6,6 +6,11 @@ MetaGuard is a Django-based platform that analyzes datasets for **data quality, 
 
 ---
 
+## 🚀 Live Demo
+
+👉 [Click here to view Demo](https://metaguard-ig1v.onrender.com)
+
+> Upload a dataset and see real-time governance, PII detection, and risk scoring in action.
 
 ---
 
