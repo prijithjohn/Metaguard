@@ -57,21 +57,15 @@ class DatasetImportService:
             dataset.file_name = os.path.basename(dataset.file.name)
             dataset.save(update_fields=["file_name"])
 
-        from . import tasks as dataset_tasks
+        from .tasks import process_dataset
         try:
-            dataset_tasks.process_dataset.apply_async((dataset.id,), queue="default")
+            process_dataset(dataset.id)
         except Exception as exc:
-            logger.warning(
-                "Celery broker unavailable when queuing dataset %d: %s",
-                dataset.id,
-                str(exc),
-                exc_info=True,
-            )
-            dataset.status = "PENDING"
-            dataset.error_message = (
-                "Background processing is delayed because the task queue is unavailable. "
-                "The dataset upload completed successfully, and processing will resume once the queue is restored."
-            )
+            logger.error(
+        f"Dataset processing failed: {str(exc)}",
+        exc_info=True)
+            dataset.status = "FAILED"
+            dataset.error_message = str(exc)
             dataset.save(update_fields=["status", "error_message"])
 
         return dataset
