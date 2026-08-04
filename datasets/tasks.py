@@ -1,18 +1,24 @@
 import os
-import logging
+
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.utils import timezone
-from django.core.exceptions import ValidationError
 
-from datasets.utils import count_dataset_rows, get_local_dataset_path, stream_dataset_chunks
+from datasets.utils import (
+    count_dataset_rows,
+    get_local_dataset_path,
+    stream_dataset_chunks,
+)
 
 logger = get_task_logger(__name__)
 
 
 @shared_task(
     bind=True,
-    autoretry_for=(OSError, IOError,),
+    autoretry_for=(
+        OSError,
+        IOError,
+    ),
     retry_backoff=True,
     retry_backoff_max=600,
     retry_kwargs={"max_retries": 5},
@@ -21,11 +27,12 @@ logger = get_task_logger(__name__)
 def process_dataset(self, dataset_id):
     dataset = None
     try:
+        from governance.services import SensitiveDataDiscoveryService
+        from metadata.services import MetadataExtractionService
+        from quality.services import QualityAnalysisService
+
         from .models import Dataset
         from .services import DatasetRowValidator
-        from governance.services import SensitiveDataDiscoveryService
-        from quality.services import QualityAnalysisService
-        from metadata.services import MetadataExtractionService
 
         dataset = Dataset.objects.get(pk=dataset_id)
         dataset.status = "PROCESSING"
@@ -33,7 +40,15 @@ def process_dataset(self, dataset_id):
         dataset.error_message = None
         dataset.processed_count = 0
         dataset.failed_count = 0
-        dataset.save(update_fields=["status", "progress_percent", "error_message", "processed_count", "failed_count"])
+        dataset.save(
+            update_fields=[
+                "status",
+                "progress_percent",
+                "error_message",
+                "processed_count",
+                "failed_count",
+            ]
+        )
 
         file_path = get_local_dataset_path(dataset.file)
         if not os.path.exists(file_path):
@@ -58,10 +73,17 @@ def process_dataset(self, dataset_id):
             for row in chunk.itertuples(index=False, name=None):
                 row_data = dict(zip(chunk.columns, row))
                 try:
-                    is_valid, validation_error = DatasetRowValidator.validate_row(row_data, processed_rows)
+                    is_valid, validation_error = DatasetRowValidator.validate_row(
+                        row_data, processed_rows
+                    )
                     if not is_valid:
                         failed_rows += 1
-                        failed_row_indices.append((processed_rows, validation_error or "Row validation failed"))
+                        failed_row_indices.append(
+                            (
+                                processed_rows,
+                                validation_error or "Row validation failed",
+                            )
+                        )
                         logger.warning(
                             "Row validation failed: dataset=%d row_idx=%d error=%s",
                             dataset_id,
@@ -82,7 +104,9 @@ def process_dataset(self, dataset_id):
                     processed_rows += 1
                     continue
 
-            progress = 100 if total_rows == 0 else min(99, int(processed_rows / float(total_rows) * 100))
+            progress = (
+                100 if total_rows == 0 else min(99, int(processed_rows / float(total_rows) * 100))
+            )
             dataset.progress_percent = progress
             dataset.processed_count = processed_rows
             dataset.failed_count = failed_rows
@@ -143,18 +167,24 @@ def process_dataset(self, dataset_id):
         dataset.processed_count = processed_rows
         dataset.failed_count = failed_rows
         dataset.processed_at = timezone.now()
-        dataset.save(update_fields=[
-            "quality_score",
-            "status",
-            "progress_percent",
-            "processed_count",
-            "failed_count",
-            "processed_at",
-        ])
+        dataset.save(
+            update_fields=[
+                "quality_score",
+                "status",
+                "progress_percent",
+                "processed_count",
+                "failed_count",
+                "processed_at",
+            ]
+        )
 
         if failed_rows > 0:
             logger.warning(
-                "Dataset processing completed with failures: dataset=%d total=%d processed=%d failed=%d first_5_failures=%s",
+                (
+                    "Dataset processing completed with failures: "
+                    "dataset=%d total=%d processed=%d "
+                    "failed=%d first_5_failures=%s"
+                ),
                 dataset_id,
                 total_rows,
                 processed_rows,
@@ -178,9 +208,16 @@ def process_dataset(self, dataset_id):
                 dataset.error_message = f"Unexpected error: {str(exc)}"
                 dataset.save(update_fields=["status", "error_message"])
             except Exception:
-                logger.exception("Failed to update dataset status on error: dataset=%s", dataset_id if dataset else "unknown")
+                logger.exception(
+                    "Failed to update dataset status on error: dataset=%s",
+                    dataset_id if dataset else "unknown",
+                )
 
-        logger.exception("process_dataset failed: dataset=%s error=%s", dataset_id if dataset else "unknown", str(exc))
+        logger.exception(
+            "process_dataset failed: dataset=%s error=%s",
+            dataset_id if dataset else "unknown",
+            str(exc),
+        )
 
         if isinstance(exc, (FileNotFoundError, IOError)):
             raise self.retry(exc=exc, countdown=30)

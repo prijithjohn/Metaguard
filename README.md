@@ -1,103 +1,85 @@
-# 🛡️ MetaGuard
+# MetaGuard
 
-### Enterprise Data Governance & Risk Intelligence Platform
+MetaGuard is a Django-based data governance platform for dataset intake review. It helps teams inspect data quality, detect sensitive information, and generate executive-facing governance reports without changing the existing application behavior.
 
-MetaGuard is a Django-based platform that analyzes datasets for **data quality, metadata insights, sensitive information (PII), and risk classification**. It helps organizations identify governance issues before datasets are used for analytics or AI systems.
+## Architecture
 
----
+- Web application: Django + Gunicorn
+- Task processing: Celery workers and beat
+- Message broker: Redis
+- Database: PostgreSQL (containerized for local development)
+- Static assets: WhiteNoise
+- Media storage: local filesystem
 
-## 🚀 Live Demo
+## Features
 
-👉 [Click here to view Demo](https://metaguard-ig1v.onrender.com)
+- Dataset upload and validation
+- Metadata extraction
+- Data quality scoring
+- Sensitive data discovery
+- Governance report generation
+- Background task processing
 
-> Upload a dataset and see real-time governance, PII detection, and risk scoring in action.
+## Installation
 
----
+1. Clone the repository.
+2. Create and activate a virtual environment.
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Copy the environment template and adjust values:
+   ```bash
+   copy .env.example .env
+   ```
+5. Run migrations:
+   ```bash
+   python manage.py migrate
+   ```
 
-## 🚀 Features
+## Docker
 
-* 📂 CSV & JSON Dataset Upload
-* ⚡ Asynchronous Processing with Celery & Redis
-* 📊 Metadata Extraction
-* 📈 Data Quality Scoring
-* 🔒 PII & Sensitive Data Detection
-* 🚨 Risk Classification Engine
-* 📄 PDF Governance Reports
-* 📉 Interactive Analytics Dashboard
-
----
-
-## 🏗️ Architecture
-
-```text
-User
- ↓
-Django
- ↓
-Redis
- ↓
-Celery Workers
- ↓
-Metadata Analysis
-Quality Analysis
-PII Detection
- ↓
-PostgreSQL
- ↓
-Dashboard & PDF Reports
-```
-
----
-
-## 🛠️ Tech Stack
-
-| Layer      | Technology       |
-| ---------- | ---------------- |
-| Backend    | Django 5         |
-| Database   | PostgreSQL       |
-| Queue      | Celery           |
-| Broker     | Redis            |
-| Processing | Pandas, NumPy    |
-| Reports    | ReportLab        |
-| Frontend   | Bootstrap 5      |
-| Deployment | Railway / Docker |
-
----
-
-## ⚙️ Run Locally
+Run the full stack with Docker Compose:
 
 ```bash
-git clone https://github.com/prijithjohn/Metaguard.git
-
-cd Metaguard
-
-pip install -r requirements.txt
-
-python manage.py migrate
-
-redis-server
-
-celery -A metaguard_project worker --loglevel=info --pool=solo
-
-python manage.py runserver
+docker compose up --build
 ```
 
----
+Services:
+- web: Django application on port 8001
+- worker: Celery worker
+- beat: Celery beat scheduler
+- db: PostgreSQL
+- redis: Redis
 
-## ⭐ Highlights
+## Environment Variables
 
-* Handles datasets up to 1GB
-* Detects 13+ PII patterns
-* Real-time dashboard analytics
-* Background processing using Celery & Redis
-* Production-ready deployment architecture
+Key variables:
+- DJANGO_SECRET_KEY
+- DEBUG
+- ALLOWED_HOSTS
+- DB_ENGINE
+- POSTGRES_DB
+- POSTGRES_USER
+- POSTGRES_PASSWORD
+- POSTGRES_HOST
+- POSTGRES_PORT
+- REDIS_URL
+- CELERY_BROKER_URL
+- CELERY_RESULT_BACKEND
 
----
+## API Endpoints
 
-## 👨‍💻 Author
+- /health/
+- /api/health/
+- /datasets/
+- /datasets/upload/
 
-**Prijith John**
+## Screenshots
 
-GitHub: https://github.com/prijithjohn
+- Placeholder: add screenshots to docs/screenshots/
 
-LinkedIn: https://www.linkedin.com/in/prijith-john-dev
+## Deployment
+
+For production, configure a managed PostgreSQL instance, Redis, and environment variables securely. The containerized setup is suitable for deployment platforms that support Docker images and managed services.
+

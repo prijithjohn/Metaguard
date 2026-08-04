@@ -1,21 +1,27 @@
 FROM python:3.12-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends gcc libpq-dev build-essential curl \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libpq-dev \
+    netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt ./
+RUN python -m pip install --upgrade pip && \
+    python -m pip install -r requirements.txt
 
-COPY . .
-
-RUN python -m compileall .
+COPY . ./
+RUN python -m compileall . && chmod +x entrypoint.sh
 
 EXPOSE 8000
 
-ENTRYPOINT ["gunicorn", "metaguard_project.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["gunicorn", "metaguard_project.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]

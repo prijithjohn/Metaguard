@@ -1,27 +1,51 @@
-version: '3.9'
+x-app-common: &app-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  env_file:
+    - .env
+  environment: &app-env
+    DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
+    POSTGRES_DB: ${POSTGRES_DB:-metaguard}
+    POSTGRES_USER: ${POSTGRES_USER:-metaguard_user}
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-metaguard_pass}
+    POSTGRES_HOST: db
+    POSTGRES_PORT: 5432
+    REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+    CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/0}
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  volumes:
+    - .:/app
+  restart: unless-stopped
+
 services:
   db:
     image: postgres:15
+    container_name: metaguard-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-metaguard}
       POSTGRES_USER: ${POSTGRES_USER:-metaguard_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-metaguard_pass}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-metaguard_user} -d ${POSTGRES_DB:-metaguard} -h localhost"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-metaguard_user} -d ${POSTGRES_DB:-metaguard}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
+    container_name: metaguard-redis
     restart: unless-stopped
-    ports:
-      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -29,53 +53,31 @@ services:
       retries: 5
 
   web:
-    build: .
-    command: gunicorn metaguard_project.wsgi:application --bind 0.0.0.0:8000 --workers 3
-    volumes:
-      - .:/app:cached
+    <<: *app-common
+    container_name: metaguard-web
+    command: ["gunicorn", "metaguard_project.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2"]
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-      - DB_ENGINE=django.db.backends.postgresql
-      - POSTGRES_DB=${POSTGRES_DB:-metaguard}
-      - POSTGRES_USER=${POSTGRES_USER:-metaguard_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-metaguard_pass}
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - "8001:8000"
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health/ || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/').read()\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    <<: *app-common
+    container_name: metaguard-worker
+    command: ["celery", "-A", "metaguard_project", "worker", "--loglevel=info", "--concurrency=2", "--pool=solo"]
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A metaguard_project inspect ping -d celery@$(hostname) >/dev/null 2>&1 || exit 1"]
       interval: 20s
       timeout: 10s
       retries: 5
 
-  worker:
-    build: .
-    command: celery -A metaguard_project worker --loglevel=info --concurrency=2
-    volumes:
-      - .:/app:cached
-    env_file:
-      - .env
-    environment:
-      - REDIS_URL=redis://redis:6379/0
-      - DB_ENGINE=django.db.backends.postgresql
-      - POSTGRES_DB=${POSTGRES_DB:-metaguard}
-      - POSTGRES_USER=${POSTGRES_USER:-metaguard_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-metaguard_pass}
-      - POSTGRES_HOST=db
-      - POSTGRES_PORT=5432
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+  beat:
+    <<: *app-common
+    container_name: metaguard-beat
+    command: ["celery", "-A", "metaguard_project", "beat", "--loglevel=info"]
 
 volumes:
-  pgdata:
+  postgres_data:

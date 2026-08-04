@@ -1,4 +1,5 @@
 import logging
+
 from django.http import JsonResponse
 from django.shortcuts import render
 
@@ -12,8 +13,16 @@ class GlobalExceptionMiddleware:
     def __call__(self, request):
         try:
             return self.get_response(request)
-        except Exception as exc:
+        except Exception:
             logger.exception("Unhandled exception in request")
-            if request.path.startswith("/api/") or request.headers.get("Accept") == "application/json":
+            if (
+                request.path.startswith("/api/")
+                or request.headers.get("Accept") == "application/json"
+            ):
                 return JsonResponse({"error": "Internal server error"}, status=500)
-            return render(request, "common/error.html", {"message": "Internal server error"}, status=500)
+            return render(
+                request,
+                "common/error.html",
+                {"message": "Internal server error"},
+                status=500,
+            )
