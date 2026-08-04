@@ -1,13 +1,13 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
 
 # Virtual Environments
 venv/
+.venv/
+.venv-1/
 env/
 ENV/
-.venv/
 
 # Environment Variables
 .env
@@ -24,46 +24,26 @@ staticfiles/
 
 # Logs
 *.log
-logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
 # Celery
 celerybeat-schedule
 celerybeat.pid
-
-# IDEs
-.vscode/
-.idea/
-
-# OS Files
-.DS_Store
-Thumbs.db
-
-# Python Build Files
-build/
-dist/
-*.egg-info/
-.eggs/
-
-# Coverage / Testing
-.coverage
-htmlcov/
-.pytest_cache/
-.mypy_cache/
-
-# Temporary Files
-*.tmp
-*.temp
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Docker (optional)
-docker-data/
-
-# Generated Reports / Test Files
-*.pdf
-test_*.csv
-sample_*.csv
-
-# Runtime Files
-*.pid
