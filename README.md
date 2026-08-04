@@ -23,19 +23,19 @@ Designed using modern backend engineering practices, MetaGuard supports asynchro
 
 ### Dashboard
 
-![Dashboard](images/dashboard.png)
+![Dashboard](Images/Dashboard.png)
 
 ### Dataset Upload
 
-![Upload](images/upload.png)
+![Upload](Images/UploadDataset.png)
 
 ### Data Quality Analysis
 
-![Quality](images/quality.png)
+![Quality](Images/DataGovernance.png)
 
 ### Governance Report
 
-![Report](images/report.png)
+![Report](Images/DataQualityAnalysis.png)
 
 ---
 
@@ -210,9 +210,9 @@ MetaGuard/
 **Prijith John**
 
 - GitHub: https://github.com/prijithjohn
-- LinkedIn: linkedin.com/in/prijith-john-dev
-- Portfolio: prijith-portfolio.vercel.app 
-
+- LinkedIn: [linkedin.com/in/prijith-john-dev](https://www.linkedin.com/in/prijith-john-dev/)
+- Portfolio: [prijith-portfolio.vercel.app 
+](https://prijith-portfolio.vercel.app/)
 ---
 
 # ⭐ Support
