@@ -1,9 +1,12 @@
 import hashlib
+
 import pandas as pd
 from django.core.exceptions import ValidationError
+
+from datasets.utils import get_local_dataset_path, stream_dataset_chunks
+
 from .models import QualityReport
 from .utils import is_valid_email
-from datasets.utils import get_local_dataset_path, stream_dataset_chunks
 
 
 class QualityAnalysisService:
@@ -34,7 +37,9 @@ class QualityAnalysisService:
         return sum(1 for col in column_names if not nonempty_columns.get(col, False))
 
     @staticmethod
-    def compute_score(missing, duplicates, invalid_emails, total_cells, empty_columns, column_count):
+    def compute_score(
+        missing, duplicates, invalid_emails, total_cells, empty_columns, column_count
+    ):
         if total_cells == 0 or column_count == 0:
             return 0.0
 
@@ -81,7 +86,9 @@ class QualityAnalysisService:
                     if not chunk[column].dropna().replace("", pd.NA).dropna().empty:
                         nonempty_columns[column] = True
                     if "email" in column.lower():
-                        invalid_emails += QualityAnalysisService._count_invalid_emails(chunk[column])
+                        invalid_emails += QualityAnalysisService._count_invalid_emails(
+                            chunk[column]
+                        )
 
                 for row in chunk.itertuples(index=False, name=None):
                     fingerprint = QualityAnalysisService._fingerprint_row(row)
@@ -90,7 +97,9 @@ class QualityAnalysisService:
                     seen_hashes.add(fingerprint)
 
             column_count = len(column_names)
-            empty_columns = QualityAnalysisService._count_empty_columns(column_names, nonempty_columns)
+            empty_columns = QualityAnalysisService._count_empty_columns(
+                column_names, nonempty_columns
+            )
             total_cells = total_rows * max(column_count, 1)
             duplicates = max(0, total_rows - len(seen_hashes))
             score = QualityAnalysisService.compute_score(

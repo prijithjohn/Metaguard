@@ -1,9 +1,10 @@
 import logging
 import os
+
 import pandas as pd
-from django.core.exceptions import ValidationError
+
 from .models import Dataset
-from .utils import validate_csv_file, load_dataset_dataframe, get_valid_dataset_filename
+from .utils import get_valid_dataset_filename, validate_csv_file
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,9 @@ class DatasetRowValidator:
         """Validate a single row. Returns (is_valid, error_message)."""
         errors = []
 
-        if not row_dict or all(pd.isna(v) or (isinstance(v, str) and v.strip() == "") for v in row_dict.values()):
+        if not row_dict or all(
+            pd.isna(v) or (isinstance(v, str) and v.strip() == "") for v in row_dict.values()
+        ):
             errors.append("Row is completely empty/null")
 
         for col, val in row_dict.items():
@@ -58,12 +61,11 @@ class DatasetImportService:
             dataset.save(update_fields=["file_name"])
 
         from .tasks import process_dataset
+
         try:
             process_dataset(dataset.id)
         except Exception as exc:
-            logger.error(
-        f"Dataset processing failed: {str(exc)}",
-        exc_info=True)
+            logger.error(f"Dataset processing failed: {str(exc)}", exc_info=True)
             dataset.status = "FAILED"
             dataset.error_message = str(exc)
             dataset.save(update_fields=["status", "error_message"])

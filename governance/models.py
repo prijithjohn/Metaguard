@@ -1,9 +1,12 @@
 from django.db import models
+
 from datasets.models import Dataset
 
 
 class SensitiveDataReport(models.Model):
-    dataset = models.OneToOneField(Dataset, on_delete=models.CASCADE, related_name="sensitivity_report")
+    dataset = models.OneToOneField(
+        Dataset, on_delete=models.CASCADE, related_name="sensitivity_report"
+    )
     total_sensitive_columns = models.PositiveIntegerField(default=0)
     total_matches = models.PositiveIntegerField(default=0)
     scanned_at = models.DateTimeField(auto_now=True)
@@ -16,7 +19,9 @@ class SensitiveDataReport(models.Model):
 
 
 class SensitiveField(models.Model):
-    report = models.ForeignKey(SensitiveDataReport, on_delete=models.CASCADE, related_name="sensitive_fields")
+    report = models.ForeignKey(
+        SensitiveDataReport, on_delete=models.CASCADE, related_name="sensitive_fields"
+    )
     column_name = models.CharField(max_length=255)
     sensitivity_type = models.CharField(max_length=100)
     match_count = models.PositiveIntegerField(default=0)

@@ -1,11 +1,12 @@
-import json
 import re
 from collections import defaultdict
 
 import pandas as pd
 from django.core.exceptions import ValidationError
-from .models import SensitiveDataReport, SensitiveField
+
 from datasets.utils import get_local_dataset_path, stream_dataset_chunks
+
+from .models import SensitiveDataReport, SensitiveField
 
 
 class SensitiveDataDiscoveryService:
@@ -34,7 +35,16 @@ class SensitiveDataDiscoveryService:
         "UPI": ["upi", "vpa"],
         "DOB": ["dob", "date_of_birth", "birth"],
         "Salary": ["salary", "income", "pay", "ctc"],
-        "Address": ["address", "addr", "location", "city", "state", "zip", "zipcode", "pincode"],
+        "Address": [
+            "address",
+            "addr",
+            "location",
+            "city",
+            "state",
+            "zip",
+            "zipcode",
+            "pincode",
+        ],
     }
 
     @staticmethod
@@ -103,7 +113,11 @@ class SensitiveDataDiscoveryService:
                 if chunk_index == 0:
                     for column in chunk.columns:
                         normalized_column = column.lower()
-                        if any(keyword in normalized_column for keywords in cls.HEADER_KEYWORDS.values() for keyword in keywords):
+                        if any(
+                            keyword in normalized_column
+                            for keywords in cls.HEADER_KEYWORDS.values()
+                            for keyword in keywords
+                        ):
                             candidate_columns.add(column)
                         else:
                             candidate_columns.add(column)
@@ -119,13 +133,18 @@ class SensitiveDataDiscoveryService:
                         detected[column] = detection
                     scans_remaining[column] -= len(values)
 
-                if all(detected.get(col) is not None or scans_remaining[col] <= 0 for col in candidate_columns):
+                if all(
+                    detected.get(col) is not None or scans_remaining[col] <= 0
+                    for col in candidate_columns
+                ):
                     break
 
         except ValidationError:
             raise
         except Exception as exc:
-            raise ValidationError("Unable to parse dataset file for sensitive data discovery.") from exc
+            raise ValidationError(
+                "Unable to parse dataset file for sensitive data discovery."
+            ) from exc
 
         report, _ = SensitiveDataReport.objects.update_or_create(
             dataset=dataset,
@@ -137,7 +156,11 @@ class SensitiveDataDiscoveryService:
         report.sensitive_fields.all().delete()
 
         total_matches = 0
-        for column_name, (sensitivity_type, match_count, sample_value) in detected.items():
+        for column_name, (
+            sensitivity_type,
+            match_count,
+            sample_value,
+        ) in detected.items():
             SensitiveField.objects.create(
                 report=report,
                 column_name=column_name,

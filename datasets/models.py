@@ -31,12 +31,16 @@ class Dataset(models.Model):
         ("COMPLETED", "Completed"),
         ("FAILED", "Failed"),
     ]
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING", db_index=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="PENDING", db_index=True
+    )
     progress_percent = models.PositiveSmallIntegerField(default=0)
     error_message = models.TextField(blank=True, null=True)
     processed_at = models.DateTimeField(blank=True, null=True)
     quality_score = models.FloatField(null=True, blank=True, db_index=True)
-    risk_level = models.CharField(max_length=50, choices=RISK_LEVEL_CHOICES, blank=True, db_index=True)
+    risk_level = models.CharField(
+        max_length=50, choices=RISK_LEVEL_CHOICES, blank=True, db_index=True
+    )
     # Track row-level processing results
     processed_count = models.PositiveIntegerField(default=0)
     failed_count = models.PositiveIntegerField(default=0)

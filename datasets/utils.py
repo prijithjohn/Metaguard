@@ -1,4 +1,3 @@
-import json
 import os
 from collections import defaultdict
 
@@ -116,7 +115,7 @@ def validate_csv_file(uploaded_file):
 
 
 def load_dataset_dataframe(file_path, chunk_size=None):
-    """Legacy function for backward compatibility. Returns chunk generator via stream_dataset_chunks."""
+    """Backward-compatible wrapper around stream_dataset_chunks()."""
     chunk_size = chunk_size or DEFAULT_CHUNK_SIZE
     return stream_dataset_chunks(file_path, chunk_size=chunk_size)
 

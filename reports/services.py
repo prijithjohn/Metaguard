@@ -1,13 +1,14 @@
 import io
 from datetime import datetime
+
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
+from governance.models import SensitiveDataReport
 from metadata.models import DatasetColumn
 from quality.models import QualityReport
-from governance.models import SensitiveDataReport
 
 
 class PdfReportService:
@@ -40,19 +41,24 @@ class PdfReportService:
             ["Rows", str(dataset.row_count)],
             ["Columns", str(dataset.column_count)],
             ["Risk level", dataset.risk_level or "Unclassified"],
-            ["Quality score", f"{dataset.quality_score:.1f}" if dataset.quality_score is not None else "N/A"],
+            [
+                "Quality score",
+                (f"{dataset.quality_score:.1f}" if dataset.quality_score is not None else "N/A"),
+            ],
         ]
         summary_table = Table(summary_data, colWidths=[150, 330], hAlign="LEFT")
         summary_table.setStyle(
-            TableStyle([
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f0f0f0")),
-                ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
-            ])
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f0f0f0")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                ]
+            )
         )
         story.append(summary_table)
         story.append(Spacer(1, 16))
@@ -72,13 +78,15 @@ class PdfReportService:
 
         quality_table = Table(quality_data, colWidths=[150, 330], hAlign="LEFT")
         quality_table.setStyle(
-            TableStyle([
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
-            ])
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                ]
+            )
         )
         story.append(quality_table)
         story.append(Spacer(1, 16))
@@ -90,20 +98,25 @@ class PdfReportService:
             sensitive_data = [
                 ["Sensitive columns", str(sensitive_report.total_sensitive_columns)],
                 ["Total matches", str(sensitive_report.total_matches)],
-                ["Last scanned", PdfReportService._format_date(sensitive_report.scanned_at)],
+                [
+                    "Last scanned",
+                    PdfReportService._format_date(sensitive_report.scanned_at),
+                ],
             ]
         else:
             sensitive_data = [["No sensitive data detected", ""]]
 
         sensitive_table = Table(sensitive_data, colWidths=[150, 330], hAlign="LEFT")
         sensitive_table.setStyle(
-            TableStyle([
-                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
-            ])
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                    ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                ]
+            )
         )
         story.append(sensitive_table)
         story.append(Spacer(1, 16))
@@ -114,31 +127,40 @@ class PdfReportService:
         if columns.exists():
             metadata_data = [["Column", "Type", "Nulls", "Uniques", "Classification"]]
             for column in columns:
-                metadata_data.append([
-                    column.column_name,
-                    column.data_type,
-                    str(column.null_count),
-                    str(column.unique_count),
-                    column.classification or "-",
-                ])
+                metadata_data.append(
+                    [
+                        column.column_name,
+                        column.data_type,
+                        str(column.null_count),
+                        str(column.unique_count),
+                        column.classification or "-",
+                    ]
+                )
             metadata_table = Table(metadata_data, colWidths=[140, 100, 70, 70, 100], hAlign="LEFT")
             metadata_table.setStyle(
-                TableStyle([
-                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f0f0f0")),
-                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
-                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                    ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 9),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-                    ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
-                ])
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f0f0f0")),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+                        ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                        ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 9),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                        ("GRID", (0, 0), (-1, -1), 0.25, colors.grey),
+                    ]
+                )
             )
             story.append(metadata_table)
         else:
             story.append(Paragraph("No metadata available for this dataset.", styles["Normal"]))
 
         story.append(Spacer(1, 20))
-        story.append(Paragraph(f"Generated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}", styles["Normal"]))
+        story.append(
+            Paragraph(
+                f"Generated on {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}",
+                styles["Normal"],
+            )
+        )
 
         doc.build(story)
         buffer.seek(0)
