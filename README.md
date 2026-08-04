@@ -119,6 +119,6 @@ MetaGuard is containerized using Docker and deployed on Render with PostgreSQL, 
 **Prijith John**
 
 - GitHub: https://github.com/prijithjohn
-- LinkedIn: *(Add your LinkedIn URL)*
+- LinkedIn: linkedin.com/in/prijith-john-dev
 
 If you found this project interesting, consider giving it a ⭐.
