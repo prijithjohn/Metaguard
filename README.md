@@ -210,8 +210,8 @@ MetaGuard/
 **Prijith John**
 
 - GitHub: https://github.com/prijithjohn
-- LinkedIn: *(Add your LinkedIn Profile)*
-- Portfolio: *(Add your Portfolio URL)*
+- LinkedIn: linkedin.com/in/prijith-john-dev
+- Portfolio: prijith-portfolio.vercel.app 
 
 ---
 
