@@ -1,85 +1,124 @@
-# MetaGuard
+# 🚀 MetaGuard
 
-MetaGuard is a Django-based data governance platform for dataset intake review. It helps teams inspect data quality, detect sensitive information, and generate executive-facing governance reports without changing the existing application behavior.
+**Enterprise Data Governance & Risk Intelligence Platform**
 
-## Architecture
+MetaGuard is a production-ready Django application that helps organizations analyze uploaded datasets by extracting metadata, detecting Personally Identifiable Information (PII), evaluating data quality, classifying risk, and generating governance reports.
 
-- Web application: Django + Gunicorn
-- Task processing: Celery workers and beat
-- Message broker: Redis
-- Database: PostgreSQL (containerized for local development)
-- Static assets: WhiteNoise
-- Media storage: local filesystem
+🌐 **Live Demo:** https://metaguard-hc0k.onrender.com
 
-## Features
+---
 
-- Dataset upload and validation
-- Metadata extraction
-- Data quality scoring
-- Sensitive data discovery
-- Governance report generation
-- Background task processing
+## ✨ Features
 
-## Installation
+- 📂 Upload and validate CSV/JSON datasets
+- 🔍 Metadata extraction and schema analysis
+- 🛡️ PII detection and risk classification
+- 📊 Data quality analysis and scoring
+- 📄 Automated governance PDF reports
+- ⚡ Background processing with Celery & Redis
 
-1. Clone the repository.
-2. Create and activate a virtual environment.
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Copy the environment template and adjust values:
-   ```bash
-   copy .env.example .env
-   ```
-5. Run migrations:
-   ```bash
-   python manage.py migrate
-   ```
+---
 
-## Docker
+## 🏗️ Architecture
 
-Run the full stack with Docker Compose:
+```text
+Client
+   │
+   ▼
+Gunicorn
+   │
+   ▼
+Django
+ ├── PostgreSQL
+ └── Redis
+      │
+      ▼
+ Celery Worker
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|--------|------------|
+| Backend | Django 5 |
+| Database | PostgreSQL |
+| Task Queue | Celery + Redis |
+| Data Processing | Pandas |
+| Reports | ReportLab |
+| Server | Gunicorn |
+| Containerization | Docker & Docker Compose |
+| CI/CD | GitHub Actions |
+| Deployment | Render |
+
+---
+
+## 📸 Screenshots
+
+> Add screenshots here:
+
+- Dashboard
+- Dataset Upload
+- Data Quality Report
+- Governance Report
+
+---
+
+## ⚙️ Run Locally
 
 ```bash
+git clone https://github.com/prijithjohn/Metaguard.git
+
+cd Metaguard
+
+cp .env.example .env
+
 docker compose up --build
 ```
 
-Services:
-- web: Django application on port 8001
-- worker: Celery worker
-- beat: Celery beat scheduler
-- db: PostgreSQL
-- redis: Redis
+The application will be available at:
 
-## Environment Variables
+```
+http://localhost:8001
+```
 
-Key variables:
-- DJANGO_SECRET_KEY
-- DEBUG
-- ALLOWED_HOSTS
-- DB_ENGINE
-- POSTGRES_DB
-- POSTGRES_USER
-- POSTGRES_PASSWORD
-- POSTGRES_HOST
-- POSTGRES_PORT
-- REDIS_URL
-- CELERY_BROKER_URL
-- CELERY_RESULT_BACKEND
+---
 
-## API Endpoints
+## 🚀 Deployment
 
-- /health/
-- /api/health/
-- /datasets/
-- /datasets/upload/
+MetaGuard is containerized using Docker and deployed on Render with PostgreSQL, Redis, and GitHub Actions for continuous integration.
 
-## Screenshots
+---
 
-- Placeholder: add screenshots to docs/screenshots/
+## 🎯 Future Improvements
 
-## Deployment
+- NGINX Reverse Proxy
+- Kubernetes Deployment
+- Terraform Infrastructure
+- Prometheus & Grafana Monitoring
+- AWS S3 File Storage
 
-For production, configure a managed PostgreSQL instance, Redis, and environment variables securely. The containerized setup is suitable for deployment platforms that support Docker images and managed services.
+---
 
+## 💡 Skills Demonstrated
+
+- Django Backend Development
+- REST API Design
+- PostgreSQL
+- Celery & Redis
+- Docker & Docker Compose
+- CI/CD with GitHub Actions
+- Production Deployment
+- Data Processing with Pandas
+
+---
+
+## 👨‍💻 Author
+
+**Prijith John**
+
+- GitHub: https://github.com/prijithjohn
+- LinkedIn: *(Add your LinkedIn URL)*
+
+If you found this project interesting, consider giving it a ⭐.
